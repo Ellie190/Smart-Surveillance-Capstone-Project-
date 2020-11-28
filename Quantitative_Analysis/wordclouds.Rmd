@@ -1,0 +1,84 @@
+---
+title: "wordclouds"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+alarms_yn_text <- readLines(file.choose())
+```
+
+```{r}
+docs <- Corpus(VectorSource(alarms_yn_text))
+```
+
+```{r}
+toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+docs <- tm_map(docs, toSpace, "/")
+docs <- tm_map(docs, toSpace, "@")
+docs <- tm_map(docs, toSpace, "\\|")
+```
+
+```{r}
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeNumbers)
+docs <- tm_map(docs, removeWords, stopwords("english"))
+docs <- tm_map(docs, removeWords, c("alarm", "alarms"))
+docs <- tm_map(docs, removePunctuation)
+docs <- tm_map(docs, stripWhitespace)
+# docs <- tm_map(docs, stemDocument)
+```
+
+```{r}
+tdm_alarms <- TermDocumentMatrix(docs)
+tdm_alarms_matrix <- as.matrix(tdm_alarms)
+v_alarms <- sort(rowSums(tdm_alarms_matrix),decreasing=TRUE)
+d_alarms <- data.frame(word = names(v_alarms),freq=v_alarms)
+head(d_alarms, 10)
+```
+
+
+```{r}
+set.seed(666)
+wordcloud(words = d_alarms$word, freq = d_alarms$freq, min.freq = 5, max.words=200)
+```
+
+# Alert wordcloud
+
+```{r}
+alert_yn_text <- readLines(file.choose())
+```
+
+```{r}
+alert_docs <- Corpus(VectorSource(alert_yn_text))
+```
+
+```{r}
+alert_docs <- tm_map(alert_docs, toSpace, "/")
+alert_docs <- tm_map(alert_docs, toSpace, "@")
+alert_docs <- tm_map(alert_docs, toSpace, "\\|")
+```
+
+```{r}
+alert_docs <- tm_map(alert_docs, content_transformer(tolower))
+alert_docs <- tm_map(alert_docs, removeNumbers)
+alert_docs <- tm_map(alert_docs, removeWords, stopwords("english"))
+alert_docs <- tm_map(alert_docs, removePunctuation)
+alert_docs <- tm_map(alert_docs, stripWhitespace)
+```
+
+```{r}
+tdm_alert <- TermDocumentMatrix(alert_docs)
+tdm_alert_matrix <- as.matrix(tdm_alert)
+v_alert <- sort(rowSums(tdm_alert_matrix),decreasing=TRUE)
+d_alert <- data.frame(word = names(v_alert),freq=v_alert)
+head(d_alert, 10)
+```
+
+```{r}
+set.seed(666)
+wordcloud(words = d_alert$word, freq = d_alert$freq, min.freq = 5, max.words=200)
+```
